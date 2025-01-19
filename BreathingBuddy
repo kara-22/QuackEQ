@@ -1,0 +1,68 @@
+
+
+import pygame
+import sys
+
+pygame.init()
+
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Breathing Buddy Animation")
+
+LIGHT_BLUE = (173, 216, 230)
+DARK_BLUE = (75, 116, 185)
+
+image = pygame.image.load("/Users/karaandrews/Desktop/finalduck.png") 
+image = pygame.transform.scale(image, (WIDTH, HEIGHT // 2))  
+
+image_x = 0
+image_y = HEIGHT // 2
+
+direction = -1  
+speed = 0.5  
+paused_at_top = False
+pause_start_time = 0  
+
+font = pygame.font.SysFont("chalkboard", 48)
+
+clock = pygame.time.Clock()
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
+    if not paused_at_top:
+        image_y += direction * speed
+    
+    if image_y <= HEIGHT // 4 and direction == -1 and not paused_at_top:
+        paused_at_top = True
+        pause_start_time = pygame.time.get_ticks()  
+    
+    if paused_at_top:
+        elapsed_time = pygame.time.get_ticks() - pause_start_time
+        if elapsed_time >= 4000:  
+            paused_at_top = False
+            direction = 1  
+
+    if image_y >= HEIGHT // 2 and direction == 1:
+        direction = -1
+
+    pygame.draw.rect(screen, LIGHT_BLUE, (0, 0, WIDTH, HEIGHT * 3 // 4)) 
+    pygame.draw.rect(screen, DARK_BLUE, (0, HEIGHT * 3 // 4, WIDTH, HEIGHT // 4)) 
+
+    screen.blit(image, (image_x, image_y))
+
+    if paused_at_top:
+        text = "Hold Your Breath"
+    elif direction == -1:
+        text = "Breathe In"
+    else:
+        text = "Breathe Out"
+
+    text_surface = font.render(text, True, (0, 0, 0))  
+    screen.blit(text_surface, (WIDTH // 2 - text_surface.get_width() // 2, 50))
+
+    pygame.display.flip()
+
+    clock.tick(60)
