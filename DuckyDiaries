@@ -1,0 +1,108 @@
+import tkinter as tk
+from PIL import Image, ImageTk
+
+
+questions = [
+    {
+        'id': 1,
+        'scenario': "I dropped my ice cream! How do you think I'm feeling?",
+        'choices': ['Excited', 'Disappointed', 'Relaxed', 'Shy', 'Bored'],
+        'correct': 'Disappointed',
+        'image': '/Users/karaandrews/Desktop/sad.jpeg'  
+    },
+    {
+        'id': 2,
+        'scenario': "I saw my best friend! How do you think I'm feeling?",
+        'choices': ['Bored', 'Cheerful', 'Annoyed', 'Scared', 'Lonely'],
+        'correct': 'Cheerful',
+        'image': '/Users/karaandrews/Desktop/happy.jpeg'  
+    },
+   
+]
+
+class EmotionGameApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("QuackEQ Game")
+        self.current_question = 0
+        self.image_label = None  
+        self.image = None  
+
+        self.frame = tk.Frame(root)
+        self.frame.pack(pady=20)
+
+        self.scenario_label = tk.Label(self.frame, text="Loading question...", font=("Arial", 16), wraplength=400)
+        self.scenario_label.pack(pady=10)
+
+        self.image_label = tk.Label(self.frame)
+        self.image_label.pack(pady=10)
+
+        self.choices_frame = tk.Frame(self.frame)
+        self.choices_frame.pack()
+
+        self.result_label = tk.Label(self.frame, text="", font=("Arial", 14), fg="green")
+        self.result_label.pack(pady=20)
+
+        self.load_question()
+
+    def load_question(self):
+   
+        if self.current_question >= len(questions):
+            self.scenario_label.config(text="No more questions! You've completed the game!")
+            self.choices_frame.pack_forget()  
+            self.image_label.pack_forget()  
+            return
+
+        question = questions[self.current_question]
+        
+        self.scenario_label.config(text=question['scenario'])
+
+        self.load_image(question['image'])
+
+        for widget in self.choices_frame.winfo_children():
+            widget.destroy()
+
+        for choice in question['choices']:
+            button = tk.Button(
+                self.choices_frame,
+                text=choice,
+                command=lambda c=choice: self.check_answer(c),
+                width=15,  
+                height=3,  
+                bg="#ADD8E6",  
+                fg="black", 
+                highlightbackground="#ADD8E6",  
+                activebackground="#0000FF",  
+                padx=10,  
+                pady=5    
+            )
+            button.pack(side="left", padx=10, pady=10)  
+
+    def load_image(self, image_path):
+        """Load and display the image for the current question."""
+        try:
+            img = Image.open(image_path)
+            desired_width = 200
+            aspect_ratio = img.width/img.height 
+            desired_height = int(desired_width/aspect_ratio)
+
+            img = img.resize((desired_width, desired_height), Image.Resampling.LANCZOS)  
+            self.image = ImageTk.PhotoImage(img)
+            self.image_label.config(image=self.image)
+        except Exception as e:
+            print(f"Error loading image: {e}")
+            self.image_label.config(image='')  
+
+    def check_answer(self, selected_answer):
+        
+        question = questions[self.current_question]
+
+     
+        if selected_answer == question['correct']:
+            self.result_label.config(text="Correct! Good job!", fg="green")
+      
+            self.current_question += 1
+            self.root.after(2000, self.load_question)  
+        else:
+          
+            self.result_label.config(text="Incorrect. Try again!", fg="red")
